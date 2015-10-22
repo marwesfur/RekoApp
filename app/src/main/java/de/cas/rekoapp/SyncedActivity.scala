@@ -6,11 +6,12 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.view.View.OnClickListener
-import android.widget.{Button, ListView, TextView}
+import android.widget.AdapterView.OnItemClickListener
+import android.widget._
 import de.cas.rekoapp.backend.Projects
 import de.cas.rekoapp.dispatcher.{ProjectClosed, ProjectOpened, Event, Dispatcher}
 import de.cas.rekoapp.model.Project
-import de.cas.rekoapp.tasks.{CreateMeasureTask, Task}
+import de.cas.rekoapp.tasks.{EditMeasureTask, CreateMeasureTask, Task}
 
 class SyncedActivity extends AppCompatActivity {
 
@@ -32,6 +33,12 @@ class SyncedActivity extends AppCompatActivity {
                 override def onClick(v: View): Unit = addCreateMeasureTask()
             })
 
+            taskList.setAdapter(new ArrayAdapter[Task](this, R.id.addMeasure, tasks))
+
+            existingMeasureList.setOnItemClickListener(new OnItemClickListener {
+                override def onItemClick(parent: AdapterView[_], view: View, position: Int, id: Long): Unit = addEditMeasureTask(position)
+            })
+
             closeProject()
         }
 
@@ -43,7 +50,7 @@ class SyncedActivity extends AppCompatActivity {
     }
 
     var syncedProject: Option[Project] = None
-    val tasks = new util.ArrayList[Task]()
+    val tasks: util.List[Task] = new util.ArrayList[Task]()
 
     override def onCreate(savedInstanceState: Bundle) {
         super.onCreate(savedInstanceState)
@@ -69,7 +76,9 @@ class SyncedActivity extends AppCompatActivity {
         Ui.closeProject()
     }
 
-    def addCreateMeasureTask() = {
+    def addCreateMeasureTask() =
         tasks.add(CreateMeasureTask(syncedProject.get))
-    }
+
+    def addEditMeasureTask(index: Int) =
+        tasks.add(EditMeasureTask(syncedProject.get, syncedProject.get.measures(index)))
 }
