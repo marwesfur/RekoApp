@@ -2,6 +2,7 @@ package de.cas.rekoapp
 
 import java.util
 
+import android.content.Context
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -33,7 +34,7 @@ class SyncedActivity extends AppCompatActivity {
                 override def onClick(v: View): Unit = addCreateMeasureTask()
             })
 
-            taskList.setAdapter(new ArrayAdapter[Task](this, R.id.addMeasure, tasks))
+            taskList.setAdapter(tasks)
 
             existingMeasureList.setOnItemClickListener(new OnItemClickListener {
                 override def onItemClick(parent: AdapterView[_], view: View, position: Int, id: Long): Unit = addEditMeasureTask(position)
@@ -42,21 +43,29 @@ class SyncedActivity extends AppCompatActivity {
             closeProject()
         }
 
-        def openProject(project: Project) =
+        def openProject(project: Project) = {
             Seq(projectTitleText, addMeasureButton, existingMeasureList).foreach(_.setVisibility(View.VISIBLE))
+            projectTitleText.setText(project.title)
+        }
 
         def closeProject() =
             Seq(projectTitleText, addMeasureButton, existingMeasureList).foreach(_.setVisibility(View.INVISIBLE))
     }
 
     var syncedProject: Option[Project] = None
-    val tasks: util.List[Task] = new util.ArrayList[Task]()
+    var existingMeasures: ArrayAdapter[Task] = null
+    var tasks: ArrayAdapter[Task] = null
 
     override def onCreate(savedInstanceState: Bundle) {
         super.onCreate(savedInstanceState)
+
+        existingMeasures = new ArrayAdapter[Task](this, android.R.layout.simple_list_item_1)
+        tasks = new ArrayAdapter[Task](this, android.R.layout.simple_list_item_1)
         Ui.initialize()
 
         Dispatcher.subscribe(onMainApplicationEvent)
+
+        openProject("123")
     }
 
     def onMainApplicationEvent(event: Event) =
