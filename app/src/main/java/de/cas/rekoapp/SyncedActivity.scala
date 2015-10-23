@@ -1,6 +1,7 @@
 package de.cas.rekoapp
 
 import android.content.Intent
+import android.support.v4.app.ActivityOptionsCompat
 
 import scala.collection.JavaConversions._
 import android.os.Bundle
@@ -96,6 +97,10 @@ class SyncedActivity extends AppCompatActivity {
     def addEditMeasureTask(index: Int) =
         tasks.add(EditMeasureTask(syncedProject.get, syncedProject.get.measures(index)))
 
-    def switchToDetachedMode() =
-        startActivity(new Intent(this, classOf[DetachedActivity]))
+    // https://github.com/codepath/android_guides/wiki/Shared-Element-Activity-Transition
+    def switchToDetachedMode() = {
+        val intent = new Intent(this, classOf[DetachedActivity])
+        val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, findViewById(R.id.taskList), "taskList")
+        startActivity(intent, options.toBundle)
+    }
 }
