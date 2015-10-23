@@ -1,18 +1,16 @@
 package de.cas.rekoapp
 
-import java.util
-
-import android.content.Context
-import android.support.v7.app.AppCompatActivity
+import scala.collection.JavaConversions._
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.view.View.OnClickListener
 import android.widget.AdapterView.OnItemClickListener
 import android.widget._
 import de.cas.rekoapp.backend.Projects
-import de.cas.rekoapp.dispatcher.{ProjectClosed, ProjectOpened, Event, Dispatcher}
-import de.cas.rekoapp.model.Project
-import de.cas.rekoapp.tasks.{EditMeasureTask, CreateMeasureTask, Task}
+import de.cas.rekoapp.dispatcher.{Dispatcher, Event, ProjectClosed, ProjectOpened}
+import de.cas.rekoapp.model.{Project, ProjectMeasure}
+import de.cas.rekoapp.tasks.{CreateMeasureTask, EditMeasureTask, Task}
 
 class SyncedActivity extends AppCompatActivity {
 
@@ -22,23 +20,21 @@ class SyncedActivity extends AppCompatActivity {
         var existingMeasureList: ListView = null
         var taskList: ListView = null
 
-        def initialize() = {
+        def initialize(tasks: ArrayAdapter[Task], existingMeasures: ArrayAdapter[ProjectMeasure]) = {
             setContentView(R.layout.activity_synced)
 
             projectTitleText = findViewById(R.id.projectTitle).asInstanceOf[TextView]
             addMeasureButton = findViewById(R.id.addMeasure).asInstanceOf[Button]
-            existingMeasureList = findViewById(R.id.existingMeasureList).asInstanceOf[ListView]
-            taskList = findViewById(R.id.taskList).asInstanceOf[ListView]
-
             addMeasureButton.setOnClickListener(new OnClickListener {
                 override def onClick(v: View): Unit = addCreateMeasureTask()
             })
-
-            taskList.setAdapter(tasks)
-
+            existingMeasureList = findViewById(R.id.existingMeasureList).asInstanceOf[ListView]
+            existingMeasureList.setAdapter(existingMeasures)
             existingMeasureList.setOnItemClickListener(new OnItemClickListener {
                 override def onItemClick(parent: AdapterView[_], view: View, position: Int, id: Long): Unit = addEditMeasureTask(position)
             })
+            taskList = findViewById(R.id.taskList).asInstanceOf[ListView]
+            taskList.setAdapter(tasks)
 
             closeProject()
         }
@@ -53,19 +49,17 @@ class SyncedActivity extends AppCompatActivity {
     }
 
     var syncedProject: Option[Project] = None
-    var existingMeasures: ArrayAdapter[Task] = null
+    var existingMeasures: ArrayAdapter[ProjectMeasure] = null
     var tasks: ArrayAdapter[Task] = null
 
     override def onCreate(savedInstanceState: Bundle) {
         super.onCreate(savedInstanceState)
 
-        existingMeasures = new ArrayAdapter[Task](this, android.R.layout.simple_list_item_1)
         tasks = new ArrayAdapter[Task](this, android.R.layout.simple_list_item_1)
-        Ui.initialize()
+        existingMeasures = new ArrayAdapter[ProjectMeasure](this, android.R.layout.simple_list_item_1)
+        Ui.initialize(tasks, existingMeasures)
 
         Dispatcher.subscribe(onMainApplicationEvent)
-
-        openProject("123")
     }
 
     def onMainApplicationEvent(event: Event) =
@@ -77,11 +71,16 @@ class SyncedActivity extends AppCompatActivity {
 
     def openProject(guid: String) = {
         syncedProject = Projects.byId(guid)
-        syncedProject.foreach(Ui.openProject)
+        syncedProject.foreach { project =>
+            existingMeasures.clear()
+            existingMeasures.addAll(project.measures)
+            Ui.openProject(project)
+        }
     }
 
     def closeProject() = {
         syncedProject = None
+        existingMeasures.clear()
         Ui.closeProject()
     }
 
