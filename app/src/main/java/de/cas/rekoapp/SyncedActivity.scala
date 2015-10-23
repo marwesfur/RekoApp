@@ -1,5 +1,7 @@
 package de.cas.rekoapp
 
+import android.content.Intent
+
 import scala.collection.JavaConversions._
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -35,6 +37,10 @@ class SyncedActivity extends AppCompatActivity {
             })
             taskList = findViewById(R.id.taskList).asInstanceOf[ListView]
             taskList.setAdapter(tasks)
+
+            findViewById(R.id.detachButton).asInstanceOf[Button].setOnClickListener(new OnClickListener {
+                override def onClick(v: View): Unit = switchToDetachedMode()
+            })
 
             closeProject()
         }
@@ -89,4 +95,7 @@ class SyncedActivity extends AppCompatActivity {
 
     def addEditMeasureTask(index: Int) =
         tasks.add(EditMeasureTask(syncedProject.get, syncedProject.get.measures(index)))
+
+    def switchToDetachedMode() =
+        startActivity(new Intent(this, classOf[DetachedActivity]))
 }

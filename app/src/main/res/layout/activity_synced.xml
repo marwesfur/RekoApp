@@ -35,4 +35,12 @@
         android:id="@+id/existingMeasureList"
         android:layout_below="@+id/addMeasure"
         android:layout_toEndOf="@+id/taskList" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Detach"
+        android:id="@+id/detachButton"
+        android:layout_above="@+id/addMeasure"
+        android:layout_toEndOf="@+id/projectTitle" />
 </RelativeLayout>
