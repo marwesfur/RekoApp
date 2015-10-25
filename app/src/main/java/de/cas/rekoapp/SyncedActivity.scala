@@ -1,23 +1,26 @@
 package de.cas.rekoapp
 
-import java.util
-
 import android.content.Intent
+import android.os.{AsyncTask, Bundle}
 import android.support.v4.app.ActivityOptionsCompat
-
-import scala.collection.JavaConversions._
-import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import android.view.View.OnClickListener
-import android.widget.AdapterView.OnItemClickListener
 import android.widget._
-import de.cas.rekoapp.backend.Projects
 import de.cas.rekoapp.dispatcher.{Dispatcher, Event, ProjectClosed, ProjectOpened}
 import de.cas.rekoapp.model.{Project, ProjectMeasure}
 import de.cas.rekoapp.tasks.{CreateMeasureTask, EditMeasureTask, Task}
+import de.cas.rekoapp.util.AndroidExtensions._
+import dispatch._
+import net.liftweb.json
+import net.liftweb.json.DefaultFormats
+
+import scala.collection.JavaConversions._
+import scala.concurrent.ExecutionContext
 
 class SyncedActivity extends AppCompatActivity {
+
+    implicit val formats = DefaultFormats
+    implicit val exec = ExecutionContext.fromExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
     object Ui {
         var projectTitleText: TextView = null
@@ -26,23 +29,14 @@ class SyncedActivity extends AppCompatActivity {
 
         def initialize(tasks: ArrayAdapter[Task], existingMeasures: ArrayAdapter[ProjectMeasure]) = {
             setContentView(R.layout.activity_synced)
-
             projectTitleText = findViewById(R.id.projectTitle).asInstanceOf[TextView]
             addMeasureButton = findViewById(R.id.addMeasure).asInstanceOf[Button]
-            addMeasureButton.setOnClickListener(new OnClickListener {
-                override def onClick(v: View): Unit = addCreateMeasureTask()
-            })
+            addMeasureButton.onClick(addCreateMeasureTask)
             existingMeasureList = findViewById(R.id.existingMeasureList).asInstanceOf[ListView]
             existingMeasureList.setAdapter(existingMeasures)
-            existingMeasureList.setOnItemClickListener(new OnItemClickListener {
-                override def onItemClick(parent: AdapterView[_], view: View, position: Int, id: Long): Unit = addEditMeasureTask(position)
-            })
-            val taskList = findViewById(R.id.taskList).asInstanceOf[ListView]
-            taskList.setAdapter(tasks)
-
-            findViewById(R.id.detachButton).asInstanceOf[Button].setOnClickListener(new OnClickListener {
-                override def onClick(v: View): Unit = switchToDetachedMode()
-            })
+            existingMeasureList.onItemClick(addEditMeasureTask)
+            findViewById(R.id.taskList).asInstanceOf[ListView].setAdapter(tasks)
+            findViewById(R.id.detachButton).asInstanceOf[Button].onClick(switchToDetachedMode)
 
             closeProject()
         }
@@ -57,7 +51,7 @@ class SyncedActivity extends AppCompatActivity {
     }
 
     var syncedProject: Option[Project] = None
-    var tasks: util.List[Task] = null
+    var tasks: java.util.List[Task] = null
     var existingMeasuresAdapter: ArrayAdapter[ProjectMeasure] = null
     var tasksAdapter: ArrayAdapter[Task] = null
 
@@ -65,7 +59,7 @@ class SyncedActivity extends AppCompatActivity {
     override def onCreate(savedInstanceState: Bundle) {
         super.onCreate(savedInstanceState)
 
-        tasks = new util.ArrayList(SharedData.tasks)
+        tasks = new java.util.ArrayList(SharedData.tasks)
         tasksAdapter = new ArrayAdapter[Task](this, android.R.layout.simple_list_item_1, tasks)
         existingMeasuresAdapter = new ArrayAdapter[ProjectMeasure](this, android.R.layout.simple_list_item_1)
         Ui.initialize(tasksAdapter, existingMeasuresAdapter)
@@ -81,12 +75,25 @@ class SyncedActivity extends AppCompatActivity {
         }
 
     def openProject(guid: String) = {
-        syncedProject = Projects.byId(guid)
-        syncedProject.foreach { project =>
-            existingMeasuresAdapter.clear()
-            existingMeasuresAdapter.addAll(project.measures)
-            Ui.openProject(project)
-        }
+        // https://groups.google.com/d/topic/dispatch-scala/fUmU6mNHbjc/discussion
+        // AsyncHttpClient seems to do i/o on the calling thread => wrapping it in a Future moves it to a background thread
+        Future { Http(url("http://localhost:8080/projects/" + guid) OK as.String) }
+          .flatMap(identity)
+          .foreach { result =>
+              val project = json.parse(result).extract[Project]
+              runOnUiThread(() => {
+                  existingMeasuresAdapter.clear()
+                  existingMeasuresAdapter.addAll(project.measures)
+                  Ui.openProject(project)
+              })
+          }
+
+//        syncedProject = Projects.byId(guid)
+//        syncedProject.foreach { project =>
+//            existingMeasuresAdapter.clear()
+//            existingMeasuresAdapter.addAll(project.measures)
+//            Ui.openProject(project)
+//        }
     }
 
     def closeProject() = {
