@@ -9,8 +9,8 @@
 
     <ListView
         android:layout_width="150dp"
-        android:layout_height="200dp"
-        android:id="@+id/listView"
+        android:layout_height="400dp"
+        android:id="@+id/detachedTaskList"
         android:transitionName="taskList"
         android:background="#4f8d5e"
         android:layout_alignParentBottom="true"
