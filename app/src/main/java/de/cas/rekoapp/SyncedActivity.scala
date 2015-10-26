@@ -18,7 +18,6 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class SyncedActivity extends AppCompatActivity {
-
     implicit val exec = ExecutionContext.fromExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
     object Ui {
