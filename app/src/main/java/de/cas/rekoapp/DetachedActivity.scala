@@ -67,8 +67,8 @@ class DetachedActivity extends AppCompatActivity {
     def startTask(index: Int): Unit = {
         currentTask = Some(tasks(index))
         tasks(index) match {
-            case EditMeasureTask(_, measure) => Ui.show(measure.title, measure.text)
-            case CreateMeasureTask(project) => Ui.show("", "")
+            case EditMeasureTask(_, measure, false) => Ui.show(measure.title, measure.text)
+            case CreateMeasureTask(project, false) => Ui.show("", "")
         }
     }
 
@@ -77,8 +77,8 @@ class DetachedActivity extends AppCompatActivity {
 
     def finishTask() = {
         val operation = currentTask match {
-            case Some(EditMeasureTask(project, measure)) => Projects.saveMeasure(project, measure.copy(title = Ui.title(), text = Ui.text()))
-            case Some(CreateMeasureTask(project)) => Projects.createMeasure(project, Ui.title(), Ui.text())
+            case Some(EditMeasureTask(project, measure, _)) => Projects.saveMeasure(project, measure.copy(title = Ui.title(), text = Ui.text()))
+            case Some(CreateMeasureTask(project, _)) => Projects.createMeasure(project, Ui.title(), Ui.text())
             case _ => null
         }
 
@@ -86,6 +86,10 @@ class DetachedActivity extends AppCompatActivity {
             case Success(_) =>
                 runOnUiThread(new Runnable {
                     override def run(): Unit = {
+                        val newTask = currentTask.get.finish()
+                        val indexOfTask = tasks.indexOf(currentTask.get)
+                        tasks.remove(indexOfTask)
+                        tasks.add(indexOfTask, newTask)
                         currentTask = None
                         Ui.hide()
                         Toast.makeText(DetachedActivity.this, "Gespeichert", Toast.LENGTH_SHORT).show()

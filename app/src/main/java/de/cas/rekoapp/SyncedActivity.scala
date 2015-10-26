@@ -56,7 +56,7 @@ class SyncedActivity extends AppCompatActivity {
     override def onCreate(savedInstanceState: Bundle) {
         super.onCreate(savedInstanceState)
 
-        tasks = new java.util.ArrayList(SharedData.tasks)
+        tasks = new java.util.ArrayList(SharedData.tasks.filter(!_.done))
         tasksAdapter = new ArrayAdapter[Task](this, android.R.layout.simple_list_item_1, tasks)
         existingMeasuresAdapter = new ArrayAdapter[ProjectMeasure](this, android.R.layout.simple_list_item_1)
         Ui.initialize(tasksAdapter, existingMeasuresAdapter)
@@ -94,10 +94,10 @@ class SyncedActivity extends AppCompatActivity {
     }
 
     def addCreateMeasureTask() =
-        tasksAdapter.add(CreateMeasureTask(syncedProject.get))
+        tasksAdapter.add(CreateMeasureTask(syncedProject.get, false))
 
     def addEditMeasureTask(index: Int) =
-        tasksAdapter.add(EditMeasureTask(syncedProject.get, syncedProject.get.measures(index)))
+        tasksAdapter.add(EditMeasureTask(syncedProject.get, syncedProject.get.measures(index), false))
 
     // https://github.com/codepath/android_guides/wiki/Shared-Element-Activity-Transition
     def switchToDetachedMode() = {
