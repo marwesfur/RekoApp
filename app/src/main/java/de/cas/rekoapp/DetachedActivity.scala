@@ -91,11 +91,6 @@ class DetachedActivity extends AppCompatActivity {
                         Toast.makeText(DetachedActivity.this, "Gespeichert", Toast.LENGTH_SHORT).show()
                     }
                 })
-                runOnUiThread(() => {
-                    currentTask = None
-                    Ui.hide()
-                    Toast.makeText(DetachedActivity.this, "Gespeichert", Toast.LENGTH_SHORT).show()
-                })
             case Failure(error) =>
                 println(error)
         }
