@@ -43,6 +43,6 @@
         android:layout_height="wrap_content"
         android:text="Detach"
         android:id="@+id/detachButton"
-        android:layout_above="@+id/addMeasure"
-        android:layout_toEndOf="@+id/projectTitle" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignEnd="@+id/existingMeasureList" />
 </RelativeLayout>

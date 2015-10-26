@@ -6,20 +6,19 @@ import android.support.v4.app.ActivityOptionsCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget._
+import de.cas.rekoapp.backend.Projects
 import de.cas.rekoapp.dispatcher.{Dispatcher, Event, ProjectClosed, ProjectOpened}
 import de.cas.rekoapp.model.{Project, ProjectMeasure}
 import de.cas.rekoapp.tasks.{CreateMeasureTask, EditMeasureTask, Task}
 import de.cas.rekoapp.util.AndroidExtensions._
 import dispatch._
-import net.liftweb.json
-import net.liftweb.json.DefaultFormats
 
 import scala.collection.JavaConversions._
 import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
 
 class SyncedActivity extends AppCompatActivity {
 
-    implicit val formats = DefaultFormats
     implicit val exec = ExecutionContext.fromExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
     object Ui {
@@ -55,7 +54,6 @@ class SyncedActivity extends AppCompatActivity {
     var existingMeasuresAdapter: ArrayAdapter[ProjectMeasure] = null
     var tasksAdapter: ArrayAdapter[Task] = null
 
-
     override def onCreate(savedInstanceState: Bundle) {
         super.onCreate(savedInstanceState)
 
@@ -75,25 +73,19 @@ class SyncedActivity extends AppCompatActivity {
         }
 
     def openProject(guid: String) = {
-        // https://groups.google.com/d/topic/dispatch-scala/fUmU6mNHbjc/discussion
-        // AsyncHttpClient seems to do i/o on the calling thread => wrapping it in a Future moves it to a background thread
-        Future { Http(url("http://localhost:8080/projects/" + guid) OK as.String) }
-          .flatMap(identity)
-          .foreach { result =>
-              val project = json.parse(result).extract[Project]
-              runOnUiThread(() => {
-                  existingMeasuresAdapter.clear()
-                  existingMeasuresAdapter.addAll(project.measures)
-                  Ui.openProject(project)
-              })
-          }
+        Projects.byId(guid)
+            .onComplete {
+                case Success(project) =>
+                    syncedProject = Some(project)
 
-//        syncedProject = Projects.byId(guid)
-//        syncedProject.foreach { project =>
-//            existingMeasuresAdapter.clear()
-//            existingMeasuresAdapter.addAll(project.measures)
-//            Ui.openProject(project)
-//        }
+                    runOnUiThread(() => {
+                        existingMeasuresAdapter.clear()
+                        existingMeasuresAdapter.addAll(project.measures)
+                        Ui.openProject(project)
+                    })
+                case Failure(error) =>
+                    println(error)
+            }
     }
 
     def closeProject() = {
@@ -115,5 +107,6 @@ class SyncedActivity extends AppCompatActivity {
         val intent = new Intent(this, classOf[DetachedActivity])
         val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, findViewById(R.id.taskList), "taskList")
         startActivity(intent, options.toBundle)
+        finish()
     }
 }

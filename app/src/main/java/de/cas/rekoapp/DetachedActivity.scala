@@ -1,7 +1,5 @@
 package de.cas.rekoapp
 
-import java.util
-
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
@@ -26,12 +24,12 @@ class DetachedActivity extends AppCompatActivity {
         }
     }
 
-    var tasks: util.List[Task] = null
+    var tasks: java.util.List[Task] = null
 
     override def onCreate(savedInstanceState: Bundle) {
         super.onCreate(savedInstanceState)
 
-        tasks = new util.ArrayList(SharedData.tasks)
+        tasks = new java.util.ArrayList(SharedData.tasks)
         Ui.initialize(new ArrayAdapter[Task](this, android.R.layout.simple_list_item_1, tasks))
     }
 

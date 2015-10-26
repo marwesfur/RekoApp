@@ -9,10 +9,18 @@
 
     <ListView
         android:layout_width="150dp"
-        android:layout_height="400dp"
+        android:layout_height="match_parent"
         android:id="@+id/detachedTaskList"
         android:transitionName="taskList"
         android:background="#4f8d5e"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Attach"
+        android:id="@+id/attachButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true" />
 </RelativeLayout>
