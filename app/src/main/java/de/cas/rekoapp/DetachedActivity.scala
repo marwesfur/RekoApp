@@ -104,7 +104,7 @@ class DetachedActivity extends AppCompatActivity {
         SharedData.tasks = tasks.toSeq
 
         val intent = new Intent(this, classOf[SyncedActivity])
-        val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, findViewById(R.id.taskList), "taskList")
+        val options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, findViewById(R.id.detachedTaskList), "taskList")
         startActivity(intent, options.toBundle)
         finish()
     }
