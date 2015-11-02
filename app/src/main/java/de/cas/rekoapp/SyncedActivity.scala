@@ -27,7 +27,7 @@ class SyncedActivity extends AppCompatActivity {
 
         def initialize(tasks: ArrayAdapter[Task], existingMeasures: ArrayAdapter[ProjectMeasure]) = {
             setContentView(R.layout.activity_synced)
-            projectTitleText = findViewById(R.id.projectTitle).asInstanceOf[TextView]
+            projectTitleText = findViewById(R.id.projectTitleText).asInstanceOf[TextView]
             addMeasureButton = findViewById(R.id.addMeasure).asInstanceOf[Button]
             addMeasureButton.onClick(addCreateMeasureTask)
             existingMeasureList = findViewById(R.id.existingMeasureList).asInstanceOf[ListView]

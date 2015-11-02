@@ -6,29 +6,30 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".SyncedActivity">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Aktuelles Projekt:"
+        android:id="@+id/textView3"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/taskList" />
+
     <ListView
         android:layout_width="150dp"
         android:layout_height="match_parent"
         android:id="@+id/taskList"
-        android:layout_centerVertical="true"
-        android:layout_alignParentStart="true"
         android:transitionName="taskList"
-        android:background="#4f8d5e" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/projectTitle"
-        android:layout_alignTop="@+id/taskList"
-        android:layout_toEndOf="@+id/taskList"
-        android:text="Title" />
+        android:background="#4f8d5e"
+        android:layout_alignBottom="@+id/detachButton"
+        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Neue Maßnahme"
         android:id="@+id/addMeasure"
-        android:layout_below="@+id/projectTitle"
+        android:layout_below="@+id/textView3"
         android:layout_toEndOf="@+id/taskList" />
 
     <ListView
@@ -45,4 +46,14 @@
         android:id="@+id/detachButton"
         android:layout_alignParentBottom="true"
         android:layout_alignEnd="@+id/existingMeasureList" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Large Text"
+        android:id="@+id/projectTitleText"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/textView3" />
+
 </RelativeLayout>
